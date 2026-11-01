@@ -8,20 +8,14 @@
         <component :is="Component" v-if="!routev.meta.keepAlive" :key="routev.fullPath" />
       </RouterView>
     </div>
-    <div v-if="!hideBtmBar" class="flex gap-4 px-8 py-4">
-      <div class="codicon codicon-arrow-left vsc-toolbar-btn" @click="router.back()"></div>
+    <div v-if="!hideBtmBar" class="flex items-center gap-4 px-8 py-4">
+      <template v-if="isReading">
+        <div class="codicon codicon-list-unordered vsc-toolbar-btn" title="目录" @click="openChapters"></div>
+        <div class="codicon codicon-search vsc-toolbar-btn" title="在正文中查找 (Ctrl+F)" @click="openFind"></div>
+      </template>
       <div class="flex-1"></div>
-      <div
-        class="codicon codicon-github-alt vsc-toolbar-btn"
-        title="github"
-        @click="executeCommand({ command: 'vscode.open', data: ['https://github.com/aooiuu/any-reader'] })"
-      ></div>
+      <div class="codicon codicon-library vsc-toolbar-btn" title="书架" @click="router.push('/home')"></div>
       <div class="codicon codicon-settings-gear vsc-toolbar-btn" title="设置" @click="router.push('/settings')"></div>
-      <div class="codicon codicon-extensions vsc-toolbar-btn" title="规则" @click="router.push('/vsc/rules')"></div>
-      <div class="codicon codicon-flame vsc-toolbar-btn" title="大发现页" @click="executeCommand({ command: 'any-reader.discover' })"></div>
-      <div class="codicon codicon-go-to-search vsc-toolbar-btn" title="大搜索" @click="executeCommand({ command: 'any-reader.search' })"></div>
-      <div class="codicon codicon-search vsc-toolbar-btn" title="搜索" @click="router.push('/vsc/search')"></div>
-      <div class="codicon codicon-home vsc-toolbar-btn" title="首页" @click="router.push('/')"></div>
     </div>
   </div>
 </template>
@@ -29,11 +23,22 @@
 <script setup>
 // import '@/assets/vscode.css';
 import '@/plugins/vsc-ui';
-
-import { executeCommand } from '@/api/modules/vsc';
+import { useBus, EVENT_CHAPTERS_BOX, EVENT_FIND_BOX } from '@/utils/bus';
 
 const route = useRoute();
 const router = useRouter();
 
 const hideBtmBar = computed(() => route.meta?.hideBtmBar);
+const isReading = computed(() => route.path === '/content');
+
+const chaptersBus = useBus(EVENT_CHAPTERS_BOX);
+const findBus = useBus(EVENT_FIND_BOX);
+
+function openChapters() {
+  chaptersBus.emit(EVENT_CHAPTERS_BOX);
+}
+
+function openFind() {
+  findBus.emit(EVENT_FIND_BOX);
+}
 </script>

@@ -30,7 +30,7 @@ export class CustomEditorProvider implements vscode.CustomReadonlyEditorProvider
     useWebviewEvent(this.webviewPanel.webview, this._context.extensionPath).then(() => {
       // 打开模板
       this.navigateTo(
-        '/chapter?' +
+        '/content?' +
           stringify({
             filePath: document.uri.fsPath
           })

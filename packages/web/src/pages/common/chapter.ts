@@ -1,13 +1,8 @@
 /**
  * 章节相关功能模块
  */
-import { stringify } from 'qs';
-import { App } from 'ant-design-vue';
-import { ContentType } from '@any-reader/rule-utils';
-import { getChapter, getContent } from '@/api';
+import { getChapter } from '@/api';
 import { getChapterHistorys } from '@/api/modules/chapter-history';
-import { openWindow } from '@/api/modules/electron';
-import { useRulesStore } from '@/stores/rules';
 import { useFavoritesStore } from '@/stores/favorites';
 
 /**
@@ -48,12 +43,9 @@ function useFavorites(params: Record<string, string>) {
  * @returns 章节列表相关的状态和方法
  */
 export function useChapter() {
-  const { message } = App.useApp();
-
   const chaptersRef = ref();
   const route = useRoute();
   const router = useRouter();
-  const rulesStore = useRulesStore();
 
   /** 当前规则ID */
   const ruleId = computed(() => route.query.ruleId);
@@ -124,66 +116,13 @@ export function useChapter() {
    * @param item - 章节项
    */
   async function showContent(item: any) {
-    const { filePath, ruleId, name } = route.query;
+    const { filePath, ruleId } = route.query;
     const history = findHistory(item);
-    const rule = rulesStore.list.find((e) => e.id === ruleId);
-    const params = {
-      percentage: history?.percentage ?? 0
-    };
 
-    // 处理视频类型内容
-    if (rule?.contentType === ContentType.VIDEO) {
-      loading.value = true;
-      const res = await getContent({
-        filePath,
-        ruleId,
-        chapterPath: item.url || item.chapterPath
-      }).catch(() => {});
-      loading.value = false;
-      const url = res?.data?.content || '';
-      if (res?.code === 0 && url) {
-        openWindow({
-          url:
-            '/player?' +
-            stringify({
-              url,
-              name,
-              chapterName: item.name
-            })
-        });
-      } else {
-        message.warning('获取地址失败！');
-      }
-      return;
-    }
-    // 处理音频类型内容
-    // TODO: 音频规则, 待优化
-    else if (rule?.contentType === ContentType.AUDIO) {
-      const res = await getContent({
-        filePath,
-        ruleId,
-        chapterPath: item.url || item.chapterPath
-      }).catch(() => {});
-      const url = res?.data?.content || '';
-      if (res?.code === 0) {
-        openWindow({
-          url:
-            '/iframe?' +
-            stringify({
-              url,
-              name,
-              chapterName: item.name
-            })
-        });
-        return;
-      }
-    }
-
-    // 处理其他类型内容
     router.push({
       path: '/content',
       query: {
-        ...params,
+        percentage: history?.percentage ?? 0,
         filePath,
         ruleId,
         chapterPath: item.url || item.chapterPath

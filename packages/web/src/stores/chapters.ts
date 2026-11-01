@@ -3,6 +3,9 @@ import { getChapter } from '@/api';
 interface Chapters {
   name: string;
   chapterPath: string;
+  /** EPUB: 章节在书内的文件路径，用于解析注释链接 */
+  chapterHref?: string;
+  spineIndex?: number;
 }
 
 export const useChaptersStore = defineStore('chapters', () => {

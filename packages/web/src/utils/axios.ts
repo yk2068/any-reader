@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { message } from 'ant-design-vue';
 import { BASE_URL } from '@/constants';
-import router from '@/router';
 
 const service = axios.create({
   withCredentials: false,
@@ -23,12 +22,8 @@ service.interceptors.response.use(
     const { showMsg = true } = response.config as any;
 
     const { code, msg } = response.data;
-    if (code === 401 || code === 10002) {
-      router.push({ name: 'login' });
-      return Promise.reject(response.data);
-    }
-    if (code === 10001) {
-      router.push({ name: 'install' });
+    // 本地阅读模式不做鉴权跳转
+    if (code === 401 || code === 10001 || code === 10002) {
       return Promise.reject(response.data);
     }
     if (code === -1) {

@@ -1,3 +1,3 @@
-import router from './router.pc';
+import router from './router.vsc';
 
 export default router;

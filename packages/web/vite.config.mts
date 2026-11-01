@@ -4,7 +4,7 @@ import { defineConfig, loadEnv } from 'vite';
 import { alias } from '../../alias';
 import createPlugins from './vite/plugins';
 
-export type TPlatform = 'browser' | 'vscode' | 'electron' | 'utools';
+export type TPlatform = 'browser' | 'vscode' | 'utools';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => {
@@ -23,8 +23,6 @@ export default defineConfig(({ mode, command }) => {
       outDir = '../vscode/template-dist';
     } else if (VITE_APP_PLATFORM === 'utools') {
       outDir = '../utools/public/template';
-    } else if (VITE_APP_PLATFORM === 'electron') {
-      outDir = 'dist/electron-template';
     }
   }
 

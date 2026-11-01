@@ -22,7 +22,6 @@ import { IS_BROWSER } from '@/constants';
 import { THEME } from '@/constants/theme';
 import { useMessage } from '@/utils/postMessage';
 import { useRulesStore } from '@/stores/rules';
-import { useFavoritesStore } from '@/stores/favorites';
 import { registerTokenToCSSVar } from '@/utils/theme';
 import { useMagicKeys } from '@/hooks/useMagicKeys';
 
@@ -40,7 +39,6 @@ watchEffect(() => {
 });
 
 useRulesStore().sync();
-useFavoritesStore().sync();
 
 useMessage('router.push', (data: string) => {
   router.push(data);

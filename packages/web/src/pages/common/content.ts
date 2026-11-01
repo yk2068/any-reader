@@ -13,8 +13,6 @@ import { useChaptersStore } from '@/stores/chapters';
 import { useSettingStore, type ReadStyle } from '@/stores/setting';
 import { useReadStore } from '@/stores/read';
 import { useKeyboardShortcuts } from '@/hooks/useMagicKeys';
-import { TTS } from '@/utils/tts';
-import { base64 } from '@/api/modules/tts';
 import { executeCommand } from '@/api/modules/vsc';
 
 /**
@@ -101,8 +99,6 @@ export function useContent(contentRef: Ref<HTMLElement>) {
   });
 
   useSaveHistory(contentRef, options);
-  const tts = useTTS(contentRef, onNextChapter);
-  let ttsStatus = false;
 
   const chapterPath = ref<string>('');
 
@@ -207,10 +203,6 @@ export function useContent(contentRef: Ref<HTMLElement>) {
       const scrollTop = contentRef.value.scrollHeight * (+percentage / 100000);
       contentRef.value.scrollTop = scrollTop;
     }
-
-    if (ttsStatus) {
-      tts.start();
-    }
   }
 
   // 路由被改变
@@ -286,10 +278,7 @@ export function useContent(contentRef: Ref<HTMLElement>) {
         prevChapter: onPrevChapter,
         nextChapter: onNextChapter,
         pageUp: onPageUp,
-        pageDown: onPageDown,
-        tts: () => {
-          ttsStatus = tts.startOrStop();
-        }
+        pageDown: onPageDown
       };
       cmdMap[cmd] && cmdMap[cmd]();
     }
@@ -308,59 +297,5 @@ export function useContent(contentRef: Ref<HTMLElement>) {
     onPrevChapter,
     onNextChapter,
     loading
-  };
-}
-
-/**
- * 文本转语音Hook
- */
-export function useTTS(contentRef: Ref<HTMLElement>, ended: () => void) {
-  let tts: TTS | null;
-
-  const route = useRoute();
-
-  /**
-   * 销毁TTS实例
-   */
-  function destroy() {
-    if (tts) {
-      tts.destroy();
-      tts = null;
-    }
-  }
-
-  watch(
-    () => route.fullPath,
-    () => {
-      destroy();
-    }
-  );
-
-  onDeactivated(destroy);
-  onUnmounted(destroy);
-
-  /**
-   * 开始TTS
-   */
-  function start() {
-    tts = new TTS(
-      contentRef.value,
-      (text: string) => {
-        return base64({ text }).then((e) => e.data);
-      },
-      ended
-    );
-  }
-
-  return {
-    start,
-    startOrStop() {
-      if (!tts) {
-        start();
-        return true;
-      } else {
-        return tts.startOrStop();
-      }
-    }
   };
 }

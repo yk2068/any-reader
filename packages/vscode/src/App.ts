@@ -14,13 +14,9 @@ class App {
     // 注册命令
     const registerCommand = vscode.commands.registerCommand;
     [
-      registerCommand(COMMANDS.searchBook, this.searchBook, this),
-      registerCommand(COMMANDS.getChapter, this.getChapter, this),
-      registerCommand(COMMANDS.discover, this.discover, this),
-      registerCommand(COMMANDS.openUrl, this.openUrl, this),
+      registerCommand(COMMANDS.home, this.home, this),
       registerCommand(COMMANDS.openFile, this.openFile, this),
-      registerCommand(COMMANDS.setTitle, this.setTitle, this),
-      registerCommand(COMMANDS.home, () => this.webView.navigateTo('/rules'), this.webView)
+      registerCommand(COMMANDS.setTitle, this.setTitle, this)
     ].forEach((command) => context.subscriptions.push(command));
 
     // 侧边栏 - webview
@@ -34,19 +30,9 @@ class App {
     });
   }
 
-  // 搜索
-  async searchBook() {
-    this.webView.navigateTo('/search');
-  }
-
-  // 发现页
-  discover() {
-    this.webView.navigateTo('/category');
-  }
-
-  // 打开链接
-  openUrl(url: string, title?: string) {
-    this.webView.navigateTo(url, title);
+  // 书架
+  home() {
+    this.webView.navigateTo('/home');
   }
 
   // 设置标题
@@ -54,39 +40,14 @@ class App {
     this.webView.setTitle(title);
   }
 
-  // 打开文件
+  // 打开文件：直接进正文
   openFile(fileEvent: { fsPath: string }) {
     if (!fileEvent) return;
     this.webView.navigateTo(
-      '/chapter?' +
+      '/content?' +
         stringify({
           filePath: fileEvent.fsPath
         })
-    );
-  }
-
-  /**
-   * 获取章节
-   */
-  async getChapter(params: any) {
-    const { ruleId, data } = params;
-
-    await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Window,
-        title: 'loading...',
-        cancellable: false
-      },
-      async () => {
-        webviewProvider.navigateTo(
-          '/chapter?' +
-            stringify({
-              ruleId,
-              ...data,
-              filePath: data.url
-            })
-        );
-      }
     );
   }
 }

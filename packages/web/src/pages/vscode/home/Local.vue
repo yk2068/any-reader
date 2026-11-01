@@ -47,7 +47,7 @@ getBookList();
 
 function showChapter(item) {
   router.push({
-    path: '/chapter',
+    path: '/content',
     query: {
       filePath: item.path,
       name: item.name

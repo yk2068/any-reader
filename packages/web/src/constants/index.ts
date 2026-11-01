@@ -1,14 +1,14 @@
 import { version } from '../../package.json';
 
-export type TPlatform = 'browser' | 'vscode' | 'electron' | 'utools';
+export type TPlatform = 'browser' | 'vscode' | 'utools';
 
 export const PLATFORM: TPlatform = import.meta.env.VITE_APP_PLATFORM;
 
 export const CONTENT_TYPES = [
-  { value: 0, label: '漫画', platform: ['browser', 'electron', 'vscode', 'utools'] },
-  { value: 1, label: '小说', platform: ['browser', 'electron', 'vscode', 'utools'] },
-  { value: 2, label: '视频', platform: ['browser', 'electron', 'vscode', 'utools'] },
-  { value: 3, label: '音频', platform: ['browser', 'electron', 'utools'] },
+  { value: 0, label: '漫画', platform: ['browser', 'vscode', 'utools'] },
+  { value: 1, label: '小说', platform: ['browser', 'vscode', 'utools'] },
+  { value: 2, label: '视频', platform: ['browser', 'vscode', 'utools'] },
+  { value: 3, label: '音频', platform: ['browser', 'utools'] },
   // { value: 4, label: 'RSS' },
   // { value: 5, label: 'NOVELMORE' },
 

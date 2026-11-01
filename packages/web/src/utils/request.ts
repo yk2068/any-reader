@@ -13,10 +13,6 @@ export async function request<T = any>(
   if (PLATFORM === 'browser') {
     // web
     return await axios(config);
-  } else if (PLATFORM === 'electron') {
-    // electron
-    const { pm } = await import(`./postMessage.electron`);
-    return wrapSend(pm.send(`${method}@${config.url}`, getPatams(config)), config);
   } else if (PLATFORM === 'utools') {
     // utools
     return wrapSend(
