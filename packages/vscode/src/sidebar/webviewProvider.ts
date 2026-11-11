@@ -34,12 +34,8 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
 
   async navigateTo(routePath = '') {
     if (!this.webviewView) {
-      const result = await vscode.window.showWarningMessage('阅读侧栏没有激活, 请先点击阅读侧栏 [ANY-READER:VIEW]', { title: '查看文档' });
-      console.log(result);
-      if (result?.title === '查看文档') {
-        const doc = 'https://aooiuu.github.io/any-reader/vsc/#侧边栏阅读问题';
-        vscode.commands.executeCommand('vscode.open', doc);
-      }
+      // 侧栏没打开时只提示，不跳外部文档
+      vscode.window.showWarningMessage('阅读侧栏没有激活，请先点击活动栏的 any-reader 图标。');
       return;
     }
     this.webviewView.show(true); // 聚焦

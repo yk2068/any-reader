@@ -1,27 +1,18 @@
 {
   "name": "@any-reader/vscode",
   "displayName": "any-reader",
-  "description": "摸鱼,自定义规则多站点聚合搜索阅读小说、漫画。包含JS规则解析库和VSCode插件。支持本地小说 TXT、EPUB",
+  "description": "本地书籍阅读器：TXT / EPUB 书架，目录、查找、注释跳转都在 VSCode 侧栏完成",
   "icon": "resources/icon.png",
-  "version": "1.11.16",
-  "publisher": "aooiu",
+  "version": "1.11.18",
+  "publisher": "yk2068",
   "private": true,
-  "qna": "https://github.com/aooiuu/any-reader/issues",
-  "bugs": {
-    "url": "https://github.com/aooiuu/any-reader/issues",
-    "email": "aooiu@qq.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aooiuu/any-reader"
-  },
   "keywords": [
     "阅读",
     "小说",
-    "漫画",
-    "摸鱼",
+    "书架",
     "reader",
-    "eso"
+    "epub",
+    "txt"
   ],
   "engines": {
     "vscode": "^1.68.0"

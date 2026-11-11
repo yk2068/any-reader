@@ -15,7 +15,12 @@
       </template>
       <div class="flex-1"></div>
       <div class="codicon codicon-library vsc-toolbar-btn" title="书架" @click="router.push('/home')"></div>
-      <div class="codicon codicon-settings-gear vsc-toolbar-btn" title="设置" @click="router.push('/settings')"></div>
+      <div
+        class="codicon codicon-settings-gear vsc-toolbar-btn"
+        :class="{ 'vsc-toolbar-btn--on': route.path === '/settings' }"
+        :title="route.path === '/settings' ? '返回阅读' : '设置'"
+        @click="toggleSettings"
+      ></div>
     </div>
   </div>
 </template>
@@ -41,4 +46,23 @@ function openChapters() {
 function openFind() {
   findBus.emit(EVENT_FIND_BOX);
 }
+
+// 设置按钮是开关：在设置页再点一次就回到点它之前的位置
+const settingsReturn = ref('/home');
+watch(
+  () => route.fullPath,
+  (now, prev) => {
+    if (now.startsWith('/settings') && prev && !prev.startsWith('/settings')) settingsReturn.value = prev;
+  }
+);
+
+function toggleSettings() {
+  router.push(route.path === '/settings' ? settingsReturn.value : '/settings');
+}
 </script>
+
+<style scoped>
+.vsc-toolbar-btn--on {
+  color: var(--vscode-textLink-foreground, #3794ff);
+}
+</style>

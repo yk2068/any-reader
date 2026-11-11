@@ -4,7 +4,7 @@ import { BaseBookParser } from './BaseBookParser';
 
 export default class EPubBookParser extends BaseBookParser implements IBookParser {
   /**
-   * 读取 EPUB spine 里的章节列表，并保留章节 href 和 spine 顺序用于 annotation 定位。
+   * 读取 EPUB spine 里的章节列表，并保留章节 href 和 spine 顺序。
    */
   public getChapter(): Promise<BookChapter[]> {
     return new Promise((resolve, reject) => {

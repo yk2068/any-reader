@@ -5,6 +5,7 @@ import { ensureFileSync, readJSONSync, writeJSONSync } from 'fs-extra/esm';
 import { AnalyzerException, AnalyzerManager, FetchException, JsVmException, createAnalyzerManager } from '@any-reader/core';
 import { LogLevel } from '@any-reader/core';
 import { LOCAL_BOOK_DIR } from './constants';
+import { normalizeDir } from './utils/normalize-dir';
 import type { DB } from './data-source';
 import { createDB } from './data-source';
 import { ChapterHistory } from './controller/ChapterHistory';
@@ -16,7 +17,6 @@ import { Bookshelf } from './controller/Bookshelf';
 import { Config } from './controller/Config';
 import { TTS } from './controller/TTS';
 import { Cache } from './controller/Cache';
-import { Annotations } from './controller/Annotations';
 import { mapRoute } from './decorators';
 
 export interface App {
@@ -42,11 +42,13 @@ export function createApp(params: { configPath: string; defaultConfig?: any; dat
     configPath: params.configPath,
     analyzerManager: params.analyzerManager || createAnalyzerManager(),
 
-    controllers: [ChapterHistory, ResourceHistory, ResourceFavorites, ResourceRule, RuleManager, Bookshelf, Config, TTS, Cache, Annotations],
+    controllers: [ChapterHistory, ResourceHistory, ResourceFavorites, ResourceRule, RuleManager, Bookshelf, Config, TTS, Cache],
 
     updateConfig(data: any) {
       ensureFileSync(app.configPath);
-      app.config = merge(app.config, data || {});
+      // 落盘前去掉书目录两端的引号，但不改调用方传进来的对象（设置页正在输入）
+      const next = data && 'bookDir' in data ? { ...data, bookDir: normalizeDir(data.bookDir) } : data;
+      app.config = merge(app.config, next || {});
       writeJSONSync(app.configPath, app.config, { spaces: 2 });
     },
 
@@ -59,7 +61,7 @@ export function createApp(params: { configPath: string; defaultConfig?: any; dat
         console.warn(error);
       }
       app.config = merge(defConfig, config);
-      if (!app.config.bookDir) app.config.bookDir = LOCAL_BOOK_DIR;
+      app.config.bookDir = normalizeDir(app.config.bookDir) || LOCAL_BOOK_DIR;
     },
 
     async useApi(register: any) {
