@@ -67,7 +67,10 @@
           @click="gotoBookHit(i)"
         >
           <div class="find-hit__chapter">{{ hit.chapterName }}</div>
-          <div class="find-hit__text">{{ hit.before }}<mark>{{ hit.match }}</mark>{{ hit.after }}</div>
+          <div class="find-hit__text">
+            {{ hit.before }}<mark>{{ hit.match }}</mark
+            >{{ hit.after }}
+          </div>
         </div>
         <div v-if="!bookHits.length && !bookSearching" class="find-hit--empty">无匹配</div>
       </div>
@@ -103,18 +106,18 @@
 </template>
 
 <script setup lang="ts">
-import { message } from 'ant-design-vue';
 import { ContentType } from '@any-reader/rule-utils';
 import { useContent, useTheme } from '@/pages/common/content';
 import { useChaptersStore } from '@/stores/chapters';
 import { useReadStore } from '@/stores/read';
-import { useBus, EVENT_CHAPTERS_BOX } from '@/utils/bus';
+import { useUiStore } from '@/stores/ui';
 import { useFind } from '@/pages/common/find';
 
 const contentRef = ref();
 
 const readStore = useReadStore();
 const chaptersStore = useChaptersStore();
+const ui = useUiStore();
 const route = useRoute();
 const router = useRouter();
 
@@ -124,7 +127,13 @@ useTheme(contentRef);
 
 /* ---------------- 目录 ---------------- */
 
-const chaptersVisible = ref(false);
+/** 目录抽屉跟着底栏按钮的开合状态走 */
+const chaptersVisible = computed({
+  get: () => ui.chaptersOpen,
+  set: (value: boolean) => {
+    ui.chaptersOpen = value;
+  }
+});
 const chapterFilter = ref('');
 const tocRef = ref<HTMLElement>();
 
@@ -139,11 +148,12 @@ function scrollTocToCurrent() {
   el?.scrollIntoView({ block: 'center' });
 }
 
-function openChapters() {
+// 抽屉打开时清空筛选并滚到当前章，无论从底栏还是别处唤起
+watch(chaptersVisible, (visible) => {
+  if (!visible) return;
   chapterFilter.value = '';
-  chaptersVisible.value = true;
   nextTick(scrollTocToCurrent);
-}
+});
 
 function gotoChapter(chapterPath: string) {
   chaptersVisible.value = false;
@@ -173,10 +183,6 @@ const {
   openBookPanel,
   clearFindMarks
 } = useFind({ contentRef, content, contentType, toChapter });
-
-// 底栏按钮通过事件总线唤起目录
-const offChaptersBus = useBus(EVENT_CHAPTERS_BOX).on(openChapters);
-onScopeDispose(() => offChaptersBus?.());
 
 /* ---------------- EPUB 注释 / 锚点跳转 ---------------- */
 
@@ -339,7 +345,6 @@ onUnmounted(() => {
   window.clearInterval(anchorTimer);
   clearFindMarks();
 });
-
 </script>
 
 <style scoped>
@@ -358,6 +363,9 @@ onUnmounted(() => {
   background-color: var(--background-color);
   color: var(--text-color);
   line-height: var(--line-height);
+  /* 底部留白，避免「返回」浮窗压住末行正文 */
+  padding-bottom: 88px;
+  scroll-padding-bottom: 88px;
 }
 
 .center-row {

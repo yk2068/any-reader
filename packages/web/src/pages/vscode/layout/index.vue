@@ -10,11 +10,26 @@
     </div>
     <div v-if="!hideBtmBar" class="flex items-center gap-4 px-8 py-4">
       <template v-if="isReading">
-        <div class="codicon codicon-list-unordered vsc-toolbar-btn" title="目录" @click="openChapters"></div>
-        <div class="codicon codicon-search vsc-toolbar-btn" title="在正文中查找 (Ctrl+F)" @click="openFind"></div>
+        <div
+          class="codicon codicon-list-unordered vsc-toolbar-btn"
+          :class="{ 'vsc-toolbar-btn--on': ui.chaptersOpen }"
+          :title="ui.chaptersOpen ? '关闭目录' : '目录'"
+          @click="ui.toggleChapters()"
+        ></div>
+        <div
+          class="codicon codicon-search vsc-toolbar-btn"
+          :class="{ 'vsc-toolbar-btn--on': ui.findOpen }"
+          :title="ui.findOpen ? '关闭查找 (Esc)' : '在正文中查找 (Ctrl+F)'"
+          @click="ui.toggleFind()"
+        ></div>
       </template>
       <div class="flex-1"></div>
-      <div class="codicon codicon-library vsc-toolbar-btn" title="书架" @click="router.push('/home')"></div>
+      <div
+        class="codicon codicon-library vsc-toolbar-btn"
+        :class="{ 'vsc-toolbar-btn--on': onShelf }"
+        :title="onShelf ? '回到阅读' : '书架'"
+        @click="toggleShelf"
+      ></div>
       <div
         class="codicon codicon-settings-gear vsc-toolbar-btn"
         :class="{ 'vsc-toolbar-btn--on': route.path === '/settings' }"
@@ -28,23 +43,44 @@
 <script setup>
 // import '@/assets/vscode.css';
 import '@/plugins/vsc-ui';
-import { useBus, EVENT_CHAPTERS_BOX, EVENT_FIND_BOX } from '@/utils/bus';
+import { useUiStore } from '@/stores/ui';
 
 const route = useRoute();
 const router = useRouter();
+const ui = useUiStore();
 
 const hideBtmBar = computed(() => route.meta?.hideBtmBar);
 const isReading = computed(() => route.path === '/content');
+const onShelf = computed(() => route.path === '/home');
 
-const chaptersBus = useBus(EVENT_CHAPTERS_BOX);
-const findBus = useBus(EVENT_FIND_BOX);
+// 离开正文页时收起正文内的面板，回来不会莫名其妙弹出
+watch(
+  () => route.path,
+  (path) => {
+    if (path !== '/content') ui.closePanels();
+  }
+);
 
-function openChapters() {
-  chaptersBus.emit(EVENT_CHAPTERS_BOX);
-}
+// 书架按钮是开关：再点一次回到上次读的那本书（不带 chapterPath，走续读定位）
+const lastReadQuery = ref({});
+watch(
+  () => route.fullPath,
+  () => {
+    if (route.path !== '/content') return;
+    const { chapterPath: _c, percentage: _p, anchor: _a, ...rest } = route.query;
+    lastReadQuery.value = rest;
+  },
+  { immediate: true }
+);
 
-function openFind() {
-  findBus.emit(EVENT_FIND_BOX);
+function toggleShelf() {
+  if (onShelf.value) {
+    if (lastReadQuery.value.filePath || lastReadQuery.value.ruleId) {
+      router.push({ path: '/content', query: lastReadQuery.value });
+    }
+    return;
+  }
+  router.push('/home');
 }
 
 // 设置按钮是开关：在设置页再点一次就回到点它之前的位置

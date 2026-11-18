@@ -7,7 +7,7 @@ import { message } from 'ant-design-vue';
 import { ContentType } from '@any-reader/rule-utils';
 import { getContent } from '@/api';
 import { useChaptersStore } from '@/stores/chapters';
-import { useBus, EVENT_FIND_BOX } from '@/utils/bus';
+import { useUiStore } from '@/stores/ui';
 
 export type FindScope = 'chapter' | 'book';
 
@@ -38,9 +38,16 @@ const MAX_HITS = 300;
 export function useFind(options: FindOptions) {
   const { contentRef, content, contentType, toChapter } = options;
   const chaptersStore = useChaptersStore();
+  const ui = useUiStore();
   const route = useRoute();
 
-  const findVisible = ref(false);
+  /** 查找栏是否打开由底栏按钮状态决定，底栏与正文共用 */
+  const findVisible = computed({
+    get: () => ui.findOpen,
+    set: (value: boolean) => {
+      ui.findOpen = value;
+    }
+  });
   const findText = ref('');
   const scope = ref<FindScope>('chapter');
   const findIndex = ref(0);
@@ -302,11 +309,38 @@ export function useFind(options: FindOptions) {
   }
 
   function openFind() {
-    if (contentType.value === ContentType.MANGA) {
-      message.info('漫画不支持文本查找');
+    ui.findOpen = true;
+    nextTick(() => {
+      findInputRef.value?.focus();
+      findInputRef.value?.select();
+    });
+  }
+
+  function closeFind() {
+    ui.findOpen = false;
+  }
+
+  /** 开关切换时处理打开/关闭的副作用，底栏按钮与 Ctrl+F 走同一条路径 */
+  watch(findVisible, (visible) => {
+    if (!visible) {
+      findText.value = '';
+      bookPanelOpen.value = false;
+      bookHits.value = [];
+      activeHit.value = -1;
+      pendingLocate = null;
+      clearTimeout(searchTimer);
+      cancelBookSearch();
+      clearFindMarks();
+      contentRef.value?.focus?.();
       return;
     }
-    findVisible.value = true;
+
+    if (contentType.value === ContentType.MANGA) {
+      message.info('漫画不支持文本查找');
+      ui.findOpen = false;
+      return;
+    }
+
     nextTick(() => {
       findInputRef.value?.focus();
       findInputRef.value?.select();
@@ -315,20 +349,7 @@ export function useFind(options: FindOptions) {
       if (scope.value === 'book') runBookSearch(keyword);
       else buildFindMarks(keyword);
     });
-  }
-
-  function closeFind() {
-    findVisible.value = false;
-    findText.value = '';
-    bookPanelOpen.value = false;
-    bookHits.value = [];
-    activeHit.value = -1;
-    pendingLocate = null;
-    clearTimeout(searchTimer);
-    cancelBookSearch();
-    clearFindMarks();
-    contentRef.value?.focus?.();
-  }
+  });
 
   function openBookPanel() {
     bookPanelOpen.value = true;
@@ -356,8 +377,6 @@ export function useFind(options: FindOptions) {
     });
   });
 
-  const offFindBus = useBus(EVENT_FIND_BOX).on(openFind);
-
   function onGlobalKeydown(e: KeyboardEvent) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
       e.preventDefault();
@@ -368,7 +387,6 @@ export function useFind(options: FindOptions) {
   onMounted(() => window.addEventListener('keydown', onGlobalKeydown, true));
   onUnmounted(() => {
     window.removeEventListener('keydown', onGlobalKeydown, true);
-    offFindBus?.();
     clearTimeout(searchTimer);
     cancelBookSearch();
     clearFindMarks();
