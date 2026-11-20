@@ -45,7 +45,7 @@ useMessage('router.push', (data: string) => {
 });
 
 // 监听热键
-const actions = {
+const actions: Record<string, () => void> = {
   'alt+←': () => {
     router.go(-1);
   },

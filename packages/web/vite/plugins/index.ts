@@ -9,7 +9,7 @@ import autoImport from './autoImport';
 import mock from './mock';
 import vue from './vue';
 
-export default function createPlugins({ env, isBuild }: { env: Record<string, string>; isBuild: boolean }) {
+export default function createPlugins({ env, isBuild: _isBuild }: { env: Record<string, string>; isBuild: boolean }) {
   const vitePlugins: PluginOption[] = [];
   vitePlugins.push(vue());
   vitePlugins.push(jsx());

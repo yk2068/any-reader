@@ -341,7 +341,6 @@ watch(
 );
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', onGlobalKeydown, true);
   window.clearInterval(anchorTimer);
   clearFindMarks();
 });

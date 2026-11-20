@@ -45,6 +45,12 @@ export type Setting = {
 export const useSettingStore = defineStore('setting', () => {
   const data = reactive<Setting>({
     readStyle: {
+      font: {
+        family: '',
+        fullName: '',
+        postscriptName: '',
+        style: 'Regular'
+      },
       fontSize: 16,
       lineHeight: 1.5,
       letterSpacing: 1,
